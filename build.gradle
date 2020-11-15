@@ -1,0 +1,57 @@
+plugins {
+    id 'org.springframework.boot' version '2.3.4.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'java'
+    id 'idea'
+}
+
+group = 'com.cartisan'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+sourceSets {
+    apiTest {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+
+    apiTestCompile.extendsFrom testCompile
+    apiTestRuntime.extendsFrom testRuntime
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    apiTestImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+	useJUnitPlatform()
+}
+
+task apiTest(type: Test) {
+    testClassesDirs = sourceSets.apiTest.output.classesDirs
+    classpath = sourceSets.apiTest.runtimeClasspath
+}
+
+idea {
+    module {
+        testSourceDirs += file('src/apiTest/java')
+        testSourceDirs += file('src/apiTest/resources')
+        scopes.TEST.plus += [configurations.apiTestCompile]
+        scopes.TEST.plus += [configurations.apiTestRuntime]
+    }
+}
+
+apiTest.mustRunAfter test
+build.dependsOn apiTest
